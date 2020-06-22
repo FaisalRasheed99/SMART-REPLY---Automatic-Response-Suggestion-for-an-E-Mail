@@ -11,6 +11,7 @@ from scipy.stats import uniform
 import warnings
 warnings.filterwarnings('ignore')
 import tensorflow as tf
+tf.enable_eager_execution()
 tf.keras.backend.clear_session()
 from tensorflow.keras.layers import Dense,concatenate,Activation,Dropout,Input
 from tensorflow.keras.models import Model
@@ -42,8 +43,10 @@ def index():
 
 def predict():
     if request.method == 'POST':
-       message = request.form['message']
-       question = [message]
+       message = request.form['review_text']
+       print(message)
+       question = message
+       print('TYpe:',type(question))
        question = re.sub(r"won't", "will not", question)
        question = re.sub(r"can\'t", "can not", question)
        question = re.sub(r"n\'t", " not", question)
@@ -133,13 +136,16 @@ def predict():
        for t in range(max_ans_length-2): 
             predictions, dec_hidden, attention_weights = decoder(dec_input, dec_hidden, enc_out)
             attention_weights = tf.reshape(attention_weights, (-1, ))
-            attention_plot[t] = attention_weights.numpy()
+            #attention_plot[t] = attention_weights.numpy()
+            print(predictions[0])
             predicted_id = tf.argmax(predictions[0]).numpy()
             result += id2word[predicted_id] + ' '
             if id2word[predicted_id] == '<eos>':
                 return result 
             dec_input = tf.expand_dims([predicted_id], 0)
-       return render_template('index.html', prediction_text='Predicted E-mail response : $ {}'.format(result))
+       print(result)
+       return result
+       #return render_template('index.html', prediction_text='Predicted E-mail response : $ {}'.format(result))
     
 
 if __name__ == "__main__":
